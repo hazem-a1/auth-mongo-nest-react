@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './auth/guards/jwt.guard';
 import { CryptoModule } from './crypto/crypto.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -14,6 +16,17 @@ import { CryptoModule } from './crypto/crypto.module';
     UserModule,
     AuthModule,
     CryptoModule,
+    ...(process.env.CURRENT_ENV === 'LOCALHOST'
+      ? []
+      : [
+          ServeStaticModule.forRoot({
+            rootPath: join(__dirname, '../frontend/dist'),
+            serveStaticOptions: {
+              fallthrough: false,
+            },
+            exclude: ['/api/**/*'],
+          }),
+        ]),
   ],
   providers: [
     {

@@ -69,6 +69,7 @@ export class AuthRefreshTokenService {
     };
   }
 
+  // TODO: add cron job to clear expired refresh tokens or better invalidate them when user logs out or requesting new token 🙃🙃
   // @Cron(CronExpression.EVERY_DAY_AT_6AM)
   // async clearExpiredRefreshTokens() {
   //   await this.refreshTokenModel.delete({

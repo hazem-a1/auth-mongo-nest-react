@@ -2,7 +2,11 @@
 
 ============================================================
 
-to start dev run dev
+to start dev `npm run dev`
+
+to build for prod `npm run build:prod`
+
+to start prod `npm run start:prod`
 
 Nest Auth MongoDB app
 
@@ -24,3 +28,6 @@ Todo:
 [] build all
 [] unit test
 [] cover OWASP
+[] use zod for validation
+[] rate limiting
+[]

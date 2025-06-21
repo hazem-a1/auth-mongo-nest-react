@@ -11,29 +11,29 @@ services:
     networks:
       - network-backend
 
-  # api:
-  #   build: ./backend
-  #   environment:
-  #     port: 3001
-  #     DATABASE_URI: mongodb://mongo:27017/auth
-  #   depends_on:
-  #     - mongo
-  #   restart: always
-  #   ports:
-  #     - "3001:3001"
-  #   networks:
-  #    - network-backend
+  api:
+    build: .
+    environment:
+      port: 3000
+      DATABASE_URI: mongodb://mongo:27017/auth
+    depends_on:
+      - mongo
+    restart: always
+    ports:
+      - '3000:3000'
+    networks:
+      - network-backend
 
-  # web:
-  #   build: ./frontend
-  #   depends_on:
-  #     - api
-  #   restart: always
+  web:
+    build: ./frontend
+    depends_on:
+      - api
+    restart: always
 
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #   - network-backend
+    ports:
+      - '5555:5555'
+    networks:
+      - network-backend
 
 networks:
   network-backend:

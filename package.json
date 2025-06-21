@@ -13,7 +13,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "NODE_ENV=production node dist/main",
+    "start:prod": "node dist/main",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
     "lint:check": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "jest",
@@ -21,8 +21,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "dev": "concurrently \"npm run start:dev\" \"npm run front:dev\"",
-    "build:all": "npm run front:build && npm run build"
+    "dev": "npm run env:dev && concurrently \"npm run start:dev\" \"npm run front:dev\"",
+    "build:prod": "npm run env:prod && npm run front:build && npm run build",
+    "env:dev": "node -e \"require('fs').copyFileSync('.env.dev', '.env');\"",
+    "env:prod": "node -e \"require('fs').copyFileSync('.env.prod', '.env');\""
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
