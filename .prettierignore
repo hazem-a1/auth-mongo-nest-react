@@ -1,0 +1,5 @@
+# Frontend files
+frontend/
+node_modules/
+dist/
+coverage/ 

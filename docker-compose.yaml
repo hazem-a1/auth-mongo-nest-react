@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    # should be exposed to the host machine if you want to access it from outside the container localhost:27017
+    ports:
+      - 27017:27017
+    networks:
+      - network-backend
+
+  # api:
+  #   build: ./backend
+  #   environment:
+  #     port: 3001
+  #     DATABASE_URI: mongodb://mongo:27017/auth
+  #   depends_on:
+  #     - mongo
+  #   restart: always
+  #   ports:
+  #     - "3001:3001"
+  #   networks:
+  #    - network-backend
+
+  # web:
+  #   build: ./frontend
+  #   depends_on:
+  #     - api
+  #   restart: always
+
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #   - network-backend
+
+networks:
+  network-backend:
+
+volumes:
+  mongodb_data:
