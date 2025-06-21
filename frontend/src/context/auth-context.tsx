@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { apiService } from "@/lib/api"
 
 interface User {
   firstName: string
@@ -13,6 +14,8 @@ interface AuthContextType {
   login: (accessToken: string, refreshToken: string) => void
   logout: () => void
   refreshToken: () => Promise<void>
+  navigateTo: (page: "login" | "signup" | "dashboard") => void
+  currentPage: "login" | "signup" | "dashboard"
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -20,42 +23,42 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState<"login" | "signup" | "dashboard">("login")
+  
+  // Store tokens in memory
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [refreshToken, setRefreshToken] = useState<string | null>(null)
 
   const isAuthenticated = !!user
 
   const login = (accessToken: string, refreshToken: string) => {
-    localStorage.setItem("accessToken", accessToken)
-    localStorage.setItem("refreshToken", refreshToken)
+    setAccessToken(accessToken)
+    setRefreshToken(refreshToken)
     fetchUser()
+    setCurrentPage("dashboard")
   }
 
   const logout = () => {
-    localStorage.removeItem("accessToken")
-    localStorage.removeItem("refreshToken")
+    setAccessToken(null)
+    setRefreshToken(null)
     setUser(null)
+    setCurrentPage("login")
+  }
+
+  const navigateTo = (page: "login" | "signup" | "dashboard") => {
+    setCurrentPage(page)
   }
 
   const fetchUser = async () => {
-    const token = localStorage.getItem("accessToken")
-    if (!token) {
+    if (!accessToken) {
       setIsLoading(false)
       return
     }
 
     try {
-      const response = await fetch("/api/v1/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        const users = await response.json()
-        if (users.length > 0) {
-          setUser(users[0]) // Assuming the first user is the current user
-        }
-      } else {
-        logout()
+      const users = await apiService.getUser(accessToken)
+      if (users.length > 0) {
+        setUser(users[0]) // Assuming the first user is the current user
       }
     } catch (error) {
       console.error("Failed to fetch user:", error)
@@ -66,24 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const refreshTokens = async () => {
-    const token = localStorage.getItem("accessToken")
-    if (!token) return
+    if (!refreshToken) return
 
     try {
-      const response = await fetch("/api/v1/auth/refresh-tokens", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        localStorage.setItem("accessToken", data.accessToken)
-        localStorage.setItem("refreshToken", data.refresh_token)
-      } else {
-        logout()
-      }
+      const data = await apiService.refreshTokens(refreshToken)
+      setAccessToken(data.accessToken)
+      setRefreshToken(data.refresh_token)
     } catch (error) {
       console.error("Failed to refresh tokens:", error)
       logout()
@@ -92,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchUser()
-  }, [])
+  }, [accessToken])
 
   return (
     <AuthContext.Provider
@@ -103,6 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         refreshToken: refreshTokens,
+        navigateTo,
+        currentPage,
       }}
     >
       {children}

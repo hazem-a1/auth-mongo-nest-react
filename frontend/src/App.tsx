@@ -1,5 +1,3 @@
-
-import { useState } from "react"
 import { AuthProvider, useAuth } from "@/context/auth-context"
 import LoginPage from "@/pages/login-page"
 import SignupPage from "@/pages/signup-page"
@@ -16,7 +14,7 @@ function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>
-              Welcome, {user?.firstName} {user?.lastName}!
+            Welcome to the application, {user?.firstName} {user?.lastName}!
             </CardTitle>
             <Button variant="outline" onClick={logout}>
               Sign Out
@@ -33,8 +31,7 @@ function Dashboard() {
 }
 
 function AuthenticatedApp() {
-  const { isAuthenticated } = useAuth()
-  const [currentPage, setCurrentPage] = useState<"login" | "signup">("login")
+  const { isAuthenticated, currentPage, navigateTo } = useAuth()
 
   if (isAuthenticated) {
     return (
@@ -49,7 +46,7 @@ function AuthenticatedApp() {
       <div>
         <SignupPage />
         <div className="fixed bottom-4 right-4">
-          <Button variant="ghost" onClick={() => setCurrentPage("login")}>
+          <Button variant="ghost" onClick={() => navigateTo("login")}>
             Back to Login
           </Button>
         </div>
@@ -61,7 +58,7 @@ function AuthenticatedApp() {
     <div>
       <LoginPage />
       <div className="fixed bottom-4 right-4">
-        <Button variant="ghost" onClick={() => setCurrentPage("signup")}>
+        <Button variant="ghost" onClick={() => navigateTo("signup")}>
           Create Account
         </Button>
       </div>

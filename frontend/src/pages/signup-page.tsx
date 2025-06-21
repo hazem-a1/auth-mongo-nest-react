@@ -1,78 +1,54 @@
 import type React from "react"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+import { useFormState, useAsyncOperation, validatePassword } from "@/lib/hooks"
+import { apiService } from "@/lib/api"
 
-interface RegisterResponse {
-  accessToken: string
-  refresh_token: string
+interface SignupForm {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  confirmPassword: string
 }
 
 export default function SignupPage() {
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const { login, navigateTo } = useAuth()
+  const { values, isLoading, error, setValues, setError } = useFormState<SignupForm>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
+  const { execute } = useAsyncOperation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
+    
+    // Validate password
+    const passwordError = validatePassword(values.password, values.confirmPassword)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 
-    // Basic password validation
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long")
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      const response = await fetch("/api/v1/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          password,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || "Registration failed")
-      }
-
-      const data: RegisterResponse = await response.json()
-
-      // Store tokens
-      localStorage.setItem("accessToken", data.accessToken)
-      localStorage.setItem("refreshToken", data.refresh_token)
-
-      // Redirect or update app state
-      console.log("Registration successful", data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed")
-    } finally {
-      setIsLoading(false)
-    }
+    await execute(
+      async () => apiService.register({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+      }),
+      (data) => login(data.accessToken, data.refresh_token),
+      (err) => setError(err.message)
+    )
   }
 
   const handleGoogleSignup = () => {
@@ -84,8 +60,11 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
-          <CardDescription className="text-center">Enter your information to create a new account</CardDescription>
+          <CardDescription className="text-center">
+            Enter your information to create a new account
+          </CardDescription>
         </CardHeader>
+        
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
@@ -101,8 +80,8 @@ export default function SignupPage() {
                   id="firstName"
                   type="text"
                   placeholder="John"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  value={values.firstName}
+                  onChange={(e) => setValues({ firstName: e.target.value })}
                   required
                   disabled={isLoading}
                 />
@@ -113,8 +92,8 @@ export default function SignupPage() {
                   id="lastName"
                   type="text"
                   placeholder="Doe"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={values.lastName}
+                  onChange={(e) => setValues({ lastName: e.target.value })}
                   required
                   disabled={isLoading}
                 />
@@ -127,8 +106,8 @@ export default function SignupPage() {
                 id="email"
                 type="email"
                 placeholder="example@hello.world"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={values.email}
+                onChange={(e) => setValues({ email: e.target.value })}
                 required
                 disabled={isLoading}
               />
@@ -140,8 +119,8 @@ export default function SignupPage() {
                 id="password"
                 type="password"
                 placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={values.password}
+                onChange={(e) => setValues({ password: e.target.value })}
                 required
                 disabled={isLoading}
               />
@@ -153,8 +132,8 @@ export default function SignupPage() {
                 id="confirmPassword"
                 type="password"
                 placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={values.confirmPassword}
+                onChange={(e) => setValues({ confirmPassword: e.target.value })}
                 required
                 disabled={isLoading}
               />
@@ -188,9 +167,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 className="text-primary hover:underline"
-                onClick={() => {
-                  /* Navigate to login */
-                }}
+                onClick={() => navigateTo("login")}
               >
                 Sign in
               </button>

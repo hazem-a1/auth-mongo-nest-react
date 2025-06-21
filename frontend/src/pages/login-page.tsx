@@ -1,56 +1,36 @@
-
 import type React from "react"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+import { useFormState, useAsyncOperation } from "@/lib/hooks"
+import { apiService } from "@/lib/api"
 
-interface LoginResponse {
-  accessToken: string
-  refresh_token: string
+interface LoginForm {
+  email: string
+  password: string
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const { login, navigateTo } = useAuth()
+  const { values, isLoading, error, setValues, setError } = useFormState<LoginForm>({
+    email: "",
+    password: "",
+  })
+  const { execute } = useAsyncOperation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    try {
-      const response = await fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Invalid credentials")
-      }
-
-      const data: LoginResponse = await response.json()
-
-      // Store tokens
-      localStorage.setItem("accessToken", data.accessToken)
-      localStorage.setItem("refreshToken", data.refresh_token)
-
-      // Redirect or update app state
-      console.log("Login successful", data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed")
-    } finally {
-      setIsLoading(false)
-    }
+    
+    await execute(
+      async () => apiService.login(values),
+      (data) => login(data.accessToken, data.refresh_token),
+      (err) => setError(err.message)
+    )
   }
 
   const handleGoogleLogin = () => {
@@ -62,8 +42,11 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
-          <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
+          <CardDescription className="text-center">
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
+        
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
@@ -78,8 +61,8 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 placeholder="example@hello.world"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={values.email}
+                onChange={(e) => setValues({ email: e.target.value })}
                 required
                 disabled={isLoading}
               />
@@ -91,8 +74,8 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={values.password}
+                onChange={(e) => setValues({ password: e.target.value })}
                 required
                 disabled={isLoading}
               />
@@ -126,9 +109,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="text-primary hover:underline"
-                onClick={() => {
-                  /* Navigate to signup */
-                }}
+                onClick={() => navigateTo("signup")}
               >
                 Sign up
               </button>
