@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
-import { useFormState, useAsyncOperation } from "@/lib/hooks"
+import { useFormState, useAsyncOperation, validateEmail } from "@/lib/hooks"
 import { apiService } from "@/lib/api"
 
 interface LoginForm {
@@ -23,12 +23,25 @@ export default function LoginPage() {
   })
   const { execute } = useAsyncOperation()
 
+  const validateForm = (): string | null => {
+    const emailError = validateEmail(values.email)
+    if (emailError) return emailError
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validate email
+    const validationError = validateForm()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    
     await execute(
       async () => apiService.login(values),
-      (data) => login(data.accessToken, data.refresh_token),
+      (data) => login(data.access_token, data.refresh_token),
       (err) => setError(err.message)
     )
   }
@@ -56,7 +69,7 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -69,7 +82,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Password *</Label>
               <Input
                 id="password"
                 type="password"

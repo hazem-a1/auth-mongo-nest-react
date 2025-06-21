@@ -1,9 +1,9 @@
 import { AuthProvider, useAuth } from "@/context/auth-context"
 import LoginPage from "@/pages/login-page"
 import SignupPage from "@/pages/signup-page"
-import ProtectedRoute from "@/lib/protected-route"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2 } from "lucide-react"
 
 function Dashboard() {
   const { user, logout } = useAuth()
@@ -14,7 +14,7 @@ function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>
-            Welcome to the application, {user?.firstName} {user?.lastName}!
+              Welcome to the application, {user?.firstName} {user?.lastName}!
             </CardTitle>
             <Button variant="outline" onClick={logout}>
               Sign Out
@@ -31,16 +31,28 @@ function Dashboard() {
 }
 
 function AuthenticatedApp() {
-  const { isAuthenticated, currentPage, navigateTo } = useAuth()
-
-  if (isAuthenticated) {
+  const { isAuthenticated, isLoading, currentPage, navigateTo } = useAuth()
+  console.log({isAuthenticated, isLoading, currentPage})
+  // Show loading state while checking authentication
+  if (isLoading) {
     return (
-      <ProtectedRoute>
-        <Dashboard />
-      </ProtectedRoute>
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-sm">
+          <CardContent className="flex items-center justify-center p-6">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            Loading...
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
+  // Show dashboard if authenticated
+  if (isAuthenticated) {
+    return <Dashboard />
+  }
+
+  // Show signup page
   if (currentPage === "signup") {
     return (
       <div>
@@ -54,6 +66,7 @@ function AuthenticatedApp() {
     )
   }
 
+  // Show login page (default)
   return (
     <div>
       <LoginPage />

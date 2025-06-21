@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
-import { useFormState, useAsyncOperation, validatePassword } from "@/lib/hooks"
+import { useFormState, useAsyncOperation, validatePassword, validateEmail, validateName } from "@/lib/hooks"
 import { apiService } from "@/lib/api"
 
 interface SignupForm {
@@ -29,13 +29,32 @@ export default function SignupPage() {
   })
   const { execute } = useAsyncOperation()
 
+  const validateForm = (): string | null => {
+    // Validate email
+    const emailError = validateEmail(values.email)
+    if (emailError) return emailError
+
+    // Validate names
+    const firstNameError = validateName(values.firstName)
+    if (firstNameError) return `First name: ${firstNameError}`
+
+    const lastNameError = validateName(values.lastName)
+    if (lastNameError) return `Last name: ${lastNameError}`
+
+    // Validate password
+    const passwordError = validatePassword(values.password, values.confirmPassword)
+    if (passwordError) return passwordError
+
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate password
-    const passwordError = validatePassword(values.password, values.confirmPassword)
-    if (passwordError) {
-      setError(passwordError)
+    // Validate all fields
+    const validationError = validateForm()
+    if (validationError) {
+      setError(validationError)
       return
     }
 
@@ -46,7 +65,7 @@ export default function SignupPage() {
         email: values.email,
         password: values.password,
       }),
-      (data) => login(data.accessToken, data.refresh_token),
+      (data) => login(data.access_token, data.refresh_token),
       (err) => setError(err.message)
     )
   }
@@ -75,7 +94,7 @@ export default function SignupPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">First Name *</Label>
                 <Input
                   id="firstName"
                   type="text"
@@ -84,10 +103,12 @@ export default function SignupPage() {
                   onChange={(e) => setValues({ firstName: e.target.value })}
                   required
                   disabled={isLoading}
+                  minLength={3}
                 />
+                <p className="text-xs text-muted-foreground">Minimum 3 characters</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">Last Name *</Label>
                 <Input
                   id="lastName"
                   type="text"
@@ -96,12 +117,14 @@ export default function SignupPage() {
                   onChange={(e) => setValues({ lastName: e.target.value })}
                   required
                   disabled={isLoading}
+                  minLength={3}
                 />
+                <p className="text-xs text-muted-foreground">Minimum 3 characters</p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -114,7 +137,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Password *</Label>
               <Input
                 id="password"
                 type="password"
@@ -123,11 +146,21 @@ export default function SignupPage() {
                 onChange={(e) => setValues({ password: e.target.value })}
                 required
                 disabled={isLoading}
+                minLength={8}
               />
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>Password requirements:</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>Minimum 8 characters</li>
+                  <li>At least one letter</li>
+                  <li>At least one number</li>
+                  <li>At least one special character</li>
+                </ul>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Confirm Password *</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -136,6 +169,7 @@ export default function SignupPage() {
                 onChange={(e) => setValues({ confirmPassword: e.target.value })}
                 required
                 disabled={isLoading}
+                minLength={8}
               />
             </div>
           </CardContent>

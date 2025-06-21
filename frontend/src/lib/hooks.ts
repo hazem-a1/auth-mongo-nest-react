@@ -48,6 +48,7 @@ export function useAsyncOperation() {
 
     try {
       const result = await operation()
+      console.log("result", result)
       onSuccess?.(result)
       return result
     } catch (err) {
@@ -67,9 +68,36 @@ export function useAsyncOperation() {
   }
 }
 
+export function validateEmail(email: string): string | null {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return "Please enter a valid email address"
+  }
+  return null
+}
+
+export function validateName(name: string): string | null {
+  if (name.length < 3) {
+    return "Name must be at least 3 characters long"
+  }
+  return null
+}
+
 export function validatePassword(password: string, confirmPassword?: string): string | null {
-  if (password.length < 6) {
-    return "Password must be at least 6 characters long"
+  if (password.length < 8) {
+    return "Password must be at least 8 characters long"
+  }
+  
+  if (!/[a-zA-Z]/.test(password)) {
+    return "Password must contain at least one letter"
+  }
+  
+  if (!/\d/.test(password)) {
+    return "Password must contain at least one number"
+  }
+  
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return "Password must contain at least one special character"
   }
   
   if (confirmPassword && password !== confirmPassword) {

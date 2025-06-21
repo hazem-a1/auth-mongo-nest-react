@@ -31,10 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!user
 
-  const login = (accessToken: string, refreshToken: string) => {
+  const login = async (accessToken: string, refreshToken: string) => {
+    console.log("login", {accessToken, refreshToken})
     setAccessToken(accessToken)
     setRefreshToken(refreshToken)
-    fetchUser()
+    await fetchUser()
     setCurrentPage("dashboard")
   }
 
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const data = await apiService.refreshTokens(refreshToken)
-      setAccessToken(data.accessToken)
+      setAccessToken(data.access_token)
       setRefreshToken(data.refresh_token)
     } catch (error) {
       console.error("Failed to refresh tokens:", error)
