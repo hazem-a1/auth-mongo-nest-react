@@ -3,17 +3,20 @@ import {
   IsString,
   IsStrongPassword,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterRequestDto {
   @ApiProperty()
   @IsString()
+  @MinLength(3, { message: 'first name too short' })
   @MaxLength(50, { message: 'first name too long' })
   firstName: string;
 
   @ApiProperty()
   @IsString()
+  @MinLength(3, { message: 'last name too short' })
   @MaxLength(50, { message: 'last name too long' })
   lastName: string;
 

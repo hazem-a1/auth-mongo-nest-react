@@ -3,16 +3,22 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { JwtGuard } from './auth/guards/jwt.guard';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
+
+import * as compression from 'compression';
+import { rateLimit } from 'express-rate-limit';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: console,
     cors: true,
   });
+  // API versioning
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
+  // Global prefix
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -24,7 +30,23 @@ async function bootstrap() {
       },
     }),
   );
+  // Jwt guard
   app.useGlobalGuards(new JwtGuard(app.get(Reflector)));
+
+  // Security middleware
+  app.use(helmet());
+
+  // Compression
+  app.use(compression());
+
+  // Rate limiting
+  app.use(
+    rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+      message: 'Too many requests from this IP, please try again later.',
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Nest Auth API')
