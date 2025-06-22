@@ -15,7 +15,7 @@ export default ({mode}: { mode: string }) => {
       },
     },
     server: {
-      port: Number(process.env.VITE_FRONT_PORT) || 4200,
+      port: Number(process.env.VITE_FRONT_PORT) || 5555,
       proxy: {
         '/api': {
           target: process.env.VITE_API_URL,

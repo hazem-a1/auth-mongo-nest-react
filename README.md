@@ -45,7 +45,7 @@ A full-stack authentication application built with NestJS, MongoDB, and React fe
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone <https://github.com/hazem-a1/auth-mongo-nest-react.git>
    cd auth-mongo-nest-react
    ```
 
@@ -258,6 +258,7 @@ Make sure to set the following environment variables in production:
 - [ ] Implement user roles and permissions
 - [ ] Add email verification
 - [ ] Implement password reset functionality
+- [ ] Add unit tests for frontend
 
 ## 📄 License
 
