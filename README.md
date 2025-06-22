@@ -1,5 +1,7 @@
 # Auth MongoDB Nest React
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hazem-a1/auth-mongo-nest-react)
+
 A full-stack authentication application built with NestJS, MongoDB, and React featuring JWT authentication, Google OAuth, and comprehensive security measures.
 
 ## Features
@@ -183,28 +185,6 @@ The API documentation is automatically generated using Swagger/OpenAPI and is av
 
 - `GET /api/user/v1` - Get current user profile
 - `PUT /api/user/v1` - Update user profile
-
-## Project Structure
-
-auth-mongo-nest-react/
-├── src/ # Backend source code
-│ ├── auth/ # Authentication module
-│ │ ├── dto/ # Data transfer objects
-│ │ ├── guards/ # Authentication guards
-│ │ ├── strategy/ # Passport strategies
-│ │ └── schema/ # Database schemas
-│ ├── user/ # User management module
-│ ├── crypto/ # Cryptography utilities
-│ └── common/ # Shared utilities
-├── frontend/ # React frontend
-│ ├── src/
-│ │ ├── components/ # React components
-│ │ ├── pages/ # Page components
-│ │ ├── context/ # React context
-│ │ └── lib/ # Utility functions
-│ └── public/ # Static assets
-├── docker-compose.yaml # Docker services
-└── package.json # Backend dependencies
 
 ## 🔧 Available Scripts
 
